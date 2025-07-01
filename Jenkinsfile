@@ -1,5 +1,3 @@
-# Also replace Jenkinsfile with consolidated version
-cat > Jenkinsfile << 'EOF'
 pipeline {
     agent any
     
@@ -88,4 +86,3 @@ ${emoji} *Pipeline ${status}*
         }
     }
 }
-EOF

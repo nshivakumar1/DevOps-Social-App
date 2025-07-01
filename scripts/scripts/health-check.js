@@ -1,4 +1,4 @@
-const axios = require('axios');
+import axios from 'axios';
 
 const services = [
   { name: 'Frontend', url: 'http://localhost:3000' },
