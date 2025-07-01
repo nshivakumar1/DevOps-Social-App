@@ -1,5 +1,3 @@
-# Replace the main CI/CD workflow with comprehensive testing
-cat > .github/workflows/ci-cd.yml << 'EOF'
 name: 🚀 DevOps Social App - Complete CI/CD Pipeline
 
 on:
@@ -388,4 +386,3 @@ jobs:
           .then(() => console.log('✅ Jira issue updated with pipeline results'))
           .catch(err => console.log('❌ Failed to update Jira:', err.message));
         "
-EOF
