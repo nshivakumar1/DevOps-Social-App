@@ -1,4 +1,15 @@
 {
+  "name": "devops-social-app",
+  "version": "1.0.0",
+  "description": "DevOps monitoring project with Slack integration",
+  "main": "index.js",
+  "scripts": {
+    "test-slack": "node test-slack.js",
+    "test-slack-quick": "node test-slack.js quick",
+    "test-slack-debug": "node test-slack.js debug"
+  },
+  "author": "Nakul Shivakumar",
+  "license": "MIT",
   "dependencies": {
     "axios": "^1.10.0",
     "dotenv": "^17.0.0"
