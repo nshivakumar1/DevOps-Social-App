@@ -1,0 +1,37 @@
+{
+    "dashboard": {
+      "title": "SocialClone Monitoring",
+      "panels": [
+        {
+          "title": "Request Rate",
+          "type": "graph",
+          "targets": [
+            {
+              "expr": "rate(http_request_duration_seconds_count[5m])",
+              "legendFormat": "{{ method }} {{ route }}"
+            }
+          ]
+        },
+        {
+          "title": "Response Time",
+          "type": "graph",
+          "targets": [
+            {
+              "expr": "histogram_quantile(0.95, rate(http_request_duration_seconds_bucket[5m]))",
+              "legendFormat": "95th percentile"
+            }
+          ]
+        },
+        {
+          "title": "Error Rate",
+          "type": "graph",
+          "targets": [
+            {
+              "expr": "rate(http_request_duration_seconds_count{status_code=~\"5..\"}[5m])",
+              "legendFormat": "5xx errors"
+            }
+          ]
+        }
+      ]
+    }
+  }

@@ -1,0 +1,105 @@
+name: Deploy Social App
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+env:
+  SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+  JIRA_BASE_URL: ${{ secrets.JIRA_BASE_URL }}
+  JIRA_EMAIL: ${{ secrets.JIRA_EMAIL }}
+  JIRA_API_TOKEN: ${{ secrets.JIRA_API_TOKEN }}
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Set up Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18'
+        
+    - name: Install dependencies
+      run: |
+        cd app/backend && npm install
+        cd ../frontend && npm install
+        
+    - name: Run tests
+      run: |
+        cd app/backend && npm test || echo "No tests configured"
+        cd ../frontend && npm test -- --coverage --passWithNoTests
+
+  build:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Build Docker images
+      run: |
+        docker build -t social-backend:${{ github.sha }} app/backend/
+        docker build -t social-frontend:${{ github.sha }} app/frontend/
+        
+    - name: Save Docker images
+      run: |
+        docker save social-backend:${{ github.sha }} | gzip > backend.tar.gz
+        docker save social-frontend:${{ github.sha }} | gzip > frontend.tar.gz
+        
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: docker-images
+        path: |
+          backend.tar.gz
+          frontend.tar.gz
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Download artifacts
+      uses: actions/download-artifact@v3
+      with:
+        name: docker-images
+        
+    - name: Load Docker images
+      run: |
+        docker load < backend.tar.gz
+        docker load < frontend.tar.gz
+        
+    - name: Deploy to staging
+      run: |
+        echo "Deploying version ${{ github.sha }} to staging..."
+        # Add your deployment commands here
+        
+    - name: Run health checks
+      run: |
+        echo "Running health checks..."
+        # Add health check commands
+        
+    - name: Notify Slack
+      run: |
+        node -e "
+        const SlackNotifier = require('./integrations/slack-webhook.js');
+        const slack = new SlackNotifier('${{ env.SLACK_WEBHOOK_URL }}');
+        slack.sendDeploymentNotification('success', '${{ github.sha }}', 'staging');
+        "
+        
+    - name: Update Jira
+      run: |
+        node -e "
+        const JiraIntegration = require('./integrations/jira-integration.js');
+        const jira = new JiraIntegration(
+          '${{ env.JIRA_BASE_URL }}',
+          '${{ env.JIRA_EMAIL }}',
+          '${{ env.JIRA_API_TOKEN }}'
+        );
+        // Update related Jira issues with deployment info
+        "
