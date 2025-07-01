@@ -1,7 +1,3 @@
-# Create frontend directory and Dockerfile
-mkdir -p app/frontend
-
-cat > app/frontend/Dockerfile << 'EOF'
 # Build stage
 FROM node:18-alpine as build
 
